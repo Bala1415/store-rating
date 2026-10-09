@@ -1,0 +1,23 @@
+{
+  "name": "store-rating-system",
+  "version": "1.0.0",
+  "description": "Store Rating Web Application for Roxiler Systems Challenge",
+  "scripts": {
+    "test": "npm --prefix backend test",
+    "db:init": "npm --prefix backend run db:init",
+    "db:seed": "npm --prefix backend run db:seed",
+    "start:backend": "npm --prefix backend start",
+    "start:frontend": "npm --prefix frontend dev",
+    "build:frontend": "npm --prefix frontend run build"
+  },
+  "keywords": [
+    "roxiler",
+    "fullstack",
+    "react",
+    "express",
+    "mysql",
+    "jwt"
+  ],
+  "author": "Balavignesh",
+  "license": "ISC"
+}
