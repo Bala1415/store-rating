@@ -4,6 +4,14 @@ A full-stack web application designed and built for the **Roxiler Systems Full S
 
 ---
 
+## 🎬 Video Demo & Walkthrough
+
+[![Store Rating Application Video Demo](./Store%20Rating%20Portal%20Demo.png)](https://youtu.be/0qX5MBqBl2w)
+
+> 📺 **Watch Demo on YouTube**: [https://youtu.be/0qX5MBqBl2w](https://youtu.be/0qX5MBqBl2w)
+
+---
+
 ## ⚡ Quick Start: How to Run in 3 Minutes
 
 ### Prerequisites
@@ -309,10 +317,11 @@ The test suite covers:
 
 ---
 
-## 📹 Video Walkthrough Guide
+## 📹 Video Walkthrough & Guide
 
-A step-by-step 10-phase demonstration guide for evaluating or recording a demo video is available at:  
-👉 **[docs/demo-recording-guide.md](docs/demo-recording-guide.md)**
+- 🎥 **Watch the Full Video Walkthrough on YouTube**: [https://youtu.be/0qX5MBqBl2w](https://youtu.be/0qX5MBqBl2w)
+- 📝 A step-by-step 10-phase demonstration guide for evaluating or recording a demo video is available at:  
+  👉 **[docs/demo-recording-guide.md](docs/demo-recording-guide.md)**
 
 ---
 
