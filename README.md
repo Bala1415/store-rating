@@ -7,6 +7,7 @@ A full-stack web application designed and built for the **Roxiler Systems Full S
 ## ⚡ Quick Start: How to Run in 3 Minutes
 
 ### Prerequisites
+
 - **Node.js**: v18.0.0 or higher
 - **MySQL**: MySQL Server 8.0+ running locally (e.g. standard port `3306`)
 - **Git** & **npm**
@@ -14,6 +15,7 @@ A full-stack web application designed and built for the **Roxiler Systems Full S
 ---
 
 ### Step 1: Install Dependencies
+
 Open a terminal in the project root:
 
 ```bash
@@ -37,6 +39,7 @@ cd ..
    cp backend/.env.example backend/.env
    ```
 2. Open `backend/.env` and update your MySQL credentials:
+
    ```env
    PORT=5000
    NODE_ENV=development
@@ -52,7 +55,9 @@ cd ..
    JWT_EXPIRES_IN=24h
    COOKIE_MAX_AGE_DAYS=1
    ```
+
 3. Initialize the database schema and populate sample seed data:
+
    ```bash
    # Creates database, tables, check constraints, foreign keys, and indexes
    npm run db:init
@@ -68,6 +73,7 @@ cd ..
 Open **two terminal windows**:
 
 #### Terminal 1 — Start Backend Server
+
 ```bash
 npm run start:backend
 # Server starts at http://localhost:5000
@@ -75,6 +81,7 @@ npm run start:backend
 ```
 
 #### Terminal 2 — Start Frontend Application
+
 ```bash
 npm run start:frontend
 # Client starts at http://localhost:5173
@@ -88,20 +95,21 @@ Now open **`http://localhost:5173`** in your browser.
 
 The seed script creates ready-to-use accounts for all roles (also available via one-click **Demo Quick-Login** buttons on the login screen):
 
-| Role | Email | Password | Access & Capabilities |
-| :--- | :--- | :--- | :--- |
-| **System Administrator** | `admin@roxiler.com` | `Admin@1234` | System dashboard, user/store management, rating audits |
-| **Store Owner** | `alice.owner@roxiler.com` | `Owner@1234` | Store dashboard, customer review logs, live average rating |
-| **Store Owner** | `robert.owner@roxiler.com` | `Owner@1234` | Associated store profile and submissions |
-| **Store Owner** | `charles.owner@roxiler.com` | `Owner@1234` | Unassigned store owner (demonstrates clean empty state) |
-| **Normal User** | `chris.user@gmail.com` | `User@1234` | Rate stores, modify ratings, browse/search listings |
-| **Normal User** | `samantha.user@gmail.com` | `User@1234` | Customer account with existing reviews |
+| Role                     | Email                       | Password     | Access & Capabilities                                      |
+| :----------------------- | :-------------------------- | :----------- | :--------------------------------------------------------- |
+| **System Administrator** | `admin@roxiler.com`         | `Admin@1234` | System dashboard, user/store management, rating audits     |
+| **Store Owner**          | `alice.owner@roxiler.com`   | `Owner@1234` | Store dashboard, customer review logs, live average rating |
+| **Store Owner**          | `robert.owner@roxiler.com`  | `Owner@1234` | Associated store profile and submissions                   |
+| **Store Owner**          | `charles.owner@roxiler.com` | `Owner@1234` | Unassigned store owner (demonstrates clean empty state)    |
+| **Normal User**          | `chris.user@gmail.com`      | `User@1234`  | Rate stores, modify ratings, browse/search listings        |
+| **Normal User**          | `samantha.user@gmail.com`   | `User@1234`  | Customer account with existing reviews                     |
 
 ---
 
 ## 🌟 Key Features Highlight
 
 ### 1. 👑 System Administrator Features
+
 - **Real-Time Database Dashboard**: Live metric cards displaying:
   - Total registered users count
   - Total registered stores count
@@ -120,6 +128,7 @@ The seed script creates ready-to-use accounts for all roles (also available via 
 ---
 
 ### 2. 👤 Normal User Features
+
 - **Public Registration & Unified Login**:
   - Sign up with Name, Email, Address, and Password (strictly provisioned with `USER` role).
   - Unified login automatically routes to the store discovery page.
@@ -136,6 +145,7 @@ The seed script creates ready-to-use accounts for all roles (also available via 
 ---
 
 ### 3. 🏬 Store Owner Features
+
 - **Dedicated Store Owner Dashboard**:
   - Displays associated store profile (Name, Address, Email).
   - Real-time overall average rating score with visual star representation.
@@ -148,20 +158,23 @@ The seed script creates ready-to-use accounts for all roles (also available via 
 ---
 
 ### 4. 📋 Strict Form Validations & Database Integrity
+
 The application rigorously enforces all challenge validation requirements at **both frontend and backend levels**, backed by **MySQL CHECK constraints**:
 
-| Field | Validation Rule | Enforcement Mechanisms |
-| :--- | :--- | :--- |
-| **Full Name** | Min 20 characters, Max 60 characters | Frontend character counter meter, Express validator, DB `chk_users_name_length` & `chk_stores_name_length` |
-| **Address** | Optional, Max 400 characters | Frontend character length counter, Express validator, DB `chk_users_address_length` & `chk_stores_address_length` |
-| **Password** | 8–16 characters, ≥1 uppercase letter, ≥1 special character | Strict Regex validation on signup, admin creation, and password modification |
-| **Email** | Standard RFC-compliant email | Strict email regex, normalized to lowercase, DB `uk_users_email` unique constraint |
-| **Rating** | Integer between 1 and 5 | Express validator, DB constraint `chk_ratings_range`, and interactive 5-star selector |
+| Field         | Validation Rule                                            | Enforcement Mechanisms                                                                                            |
+| :------------ | :--------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| **Full Name** | Min 20 characters, Max 60 characters                       | Frontend character counter meter, Express validator, DB `chk_users_name_length` & `chk_stores_name_length`        |
+| **Address**   | Optional, Max 400 characters                               | Frontend character length counter, Express validator, DB `chk_users_address_length` & `chk_stores_address_length` |
+| **Password**  | 8–16 characters, ≥1 uppercase letter, ≥1 special character | Strict Regex validation on signup, admin creation, and password modification                                      |
+| **Email**     | Standard RFC-compliant email                               | Strict email regex, normalized to lowercase, DB `uk_users_email` unique constraint                                |
+| **Rating**    | Integer between 1 and 5                                    | Express validator, DB constraint `chk_ratings_range`, and interactive 5-star selector                             |
 
 ---
 
 ### 5. 📊 Interactive Table Sorting Everywhere
+
 Per the challenge requirements, **all data tables support ascending and descending sorting**:
+
 - **Admin Users Table**: Sort by Name, Email, Address, Role, or Created Date.
 - **Admin Stores Table**: Sort by Store Name, Store Email, Address, Overall Rating, or Reviews Count.
 - **Store Owner Submissions Table**: Sort by Customer Name, Customer Email, Rating, or Submission Date.
@@ -170,6 +183,7 @@ Per the challenge requirements, **all data tables support ascending and descendi
 ---
 
 ### 6. 🛡️ Security Best Practices
+
 - **HttpOnly Secure Cookies**: JWT tokens are stored in `HttpOnly` cookies (`SameSite=lax`), completely immune to JavaScript XSS token theft.
 - **Bcrypt Hashing**: Passwords salted and hashed with `bcryptjs` (10 rounds). Plaintext passwords are never logged or stored.
 - **Role-Based Authorization (RBAC)**: Server-side middleware (`requireRoles`) protects private endpoints against unauthorized access.
@@ -246,6 +260,7 @@ npm test
 ```
 
 The test suite covers:
+
 - Input validation (Name 20–60 chars, password complexity, email format, address limits, rating range 1–5).
 - Authentication middleware and JWT cookie verification.
 - Role-based authorization matrix (`requireRoles`).
@@ -256,37 +271,41 @@ The test suite covers:
 ## 📡 API Endpoints Summary
 
 ### Authentication (`/api/auth`)
-| Method | Endpoint | Access | Purpose |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/signup` | Public | Register Normal User (enforces role `USER`) |
-| `POST` | `/api/auth/login` | Public | Unified login; sets HttpOnly cookie |
-| `POST` | `/api/auth/logout` | Authenticated | Clears HttpOnly cookie |
-| `GET` | `/api/auth/me` | Authenticated | Returns current authenticated profile |
-| `PATCH` | `/api/auth/password` | Authenticated | Updates account password |
+
+| Method  | Endpoint             | Access        | Purpose                                     |
+| :------ | :------------------- | :------------ | :------------------------------------------ |
+| `POST`  | `/api/auth/signup`   | Public        | Register Normal User (enforces role `USER`) |
+| `POST`  | `/api/auth/login`    | Public        | Unified login; sets HttpOnly cookie         |
+| `POST`  | `/api/auth/logout`   | Authenticated | Clears HttpOnly cookie                      |
+| `GET`   | `/api/auth/me`       | Authenticated | Returns current authenticated profile       |
+| `PATCH` | `/api/auth/password` | Authenticated | Updates account password                    |
 
 ### Administrator (`/api/admin`)
-| Method | Endpoint | Access | Purpose |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/admin/dashboard` | `ADMIN` | Total counts: users, stores, submitted ratings |
-| `GET` | `/api/admin/users` | `ADMIN` | Filter & sort users; includes store ratings for owners |
-| `POST` | `/api/admin/users` | `ADMIN` | Create user with `ADMIN`, `USER`, or `STORE_OWNER` role |
-| `GET` | `/api/admin/users/:id` | `ADMIN` | Inspect user profile and associated store rating details |
-| `GET` | `/api/admin/stores` | `ADMIN` | Filter & sort stores with average ratings |
-| `POST` | `/api/admin/stores` | `ADMIN` | Create store and link with a Store Owner |
+
+| Method | Endpoint               | Access  | Purpose                                                  |
+| :----- | :--------------------- | :------ | :------------------------------------------------------- |
+| `GET`  | `/api/admin/dashboard` | `ADMIN` | Total counts: users, stores, submitted ratings           |
+| `GET`  | `/api/admin/users`     | `ADMIN` | Filter & sort users; includes store ratings for owners   |
+| `POST` | `/api/admin/users`     | `ADMIN` | Create user with `ADMIN`, `USER`, or `STORE_OWNER` role  |
+| `GET`  | `/api/admin/users/:id` | `ADMIN` | Inspect user profile and associated store rating details |
+| `GET`  | `/api/admin/stores`    | `ADMIN` | Filter & sort stores with average ratings                |
+| `POST` | `/api/admin/stores`    | `ADMIN` | Create store and link with a Store Owner                 |
 
 ### Stores & Ratings (`/api/stores`)
-| Method | Endpoint | Access | Purpose |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/stores` | Public / Auth | Search stores by name/address; returns average and user rating |
-| `GET` | `/api/stores/:id` | Public / Auth | Get store details and rating breakdown |
-| `POST` | `/api/stores/:id/ratings` | `USER` | Submit rating (1–5) |
-| `PATCH`| `/api/stores/:id/ratings` | `USER` | Modify previously submitted rating |
+
+| Method  | Endpoint                  | Access        | Purpose                                                        |
+| :------ | :------------------------ | :------------ | :------------------------------------------------------------- |
+| `GET`   | `/api/stores`             | Public / Auth | Search stores by name/address; returns average and user rating |
+| `GET`   | `/api/stores/:id`         | Public / Auth | Get store details and rating breakdown                         |
+| `POST`  | `/api/stores/:id/ratings` | `USER`        | Submit rating (1–5)                                            |
+| `PATCH` | `/api/stores/:id/ratings` | `USER`        | Modify previously submitted rating                             |
 
 ### Store Owner (`/api/owner`)
-| Method | Endpoint | Access | Purpose |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/owner/dashboard` | `STORE_OWNER` | Business metrics, average rating, customer reviews list |
-| `GET` | `/api/owner/ratings` | `STORE_OWNER` | List of customer ratings with sorting |
+
+| Method | Endpoint               | Access        | Purpose                                                 |
+| :----- | :--------------------- | :------------ | :------------------------------------------------------ |
+| `GET`  | `/api/owner/dashboard` | `STORE_OWNER` | Business metrics, average rating, customer reviews list |
+| `GET`  | `/api/owner/ratings`   | `STORE_OWNER` | List of customer ratings with sorting                   |
 
 ---
 
