@@ -46,8 +46,8 @@ export const storeApi = {
 
 // Store Owner endpoints
 export const ownerApi = {
-  getDashboard: () => api.get('/owner/dashboard'),
-  getRatings: () => api.get('/owner/ratings'),
+  getDashboard: (params) => api.get('/owner/dashboard', { params }),
+  getRatings: (params) => api.get('/owner/ratings', { params }),
 };
 
 export default api;

@@ -56,7 +56,14 @@ async function getUsers(req, res, next) {
     const sortColumn = allowedSortFields[sortBy] || 'u.created_at';
     const direction = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-    let query = 'SELECT u.id, u.name, u.email, u.address, u.role, u.created_at FROM users u WHERE 1=1';
+    let query = `
+      SELECT u.id, u.name, u.email, u.address, u.role, u.created_at,
+             ROUND(AVG(r.rating), 2) AS store_rating
+      FROM users u
+      LEFT JOIN stores s ON (s.owner_user_id = u.id AND u.role = 'STORE_OWNER')
+      LEFT JOIN ratings r ON s.id = r.store_id
+      WHERE 1=1
+    `;
     const params = [];
 
     if (name) {
@@ -79,7 +86,7 @@ async function getUsers(req, res, next) {
       params.push(role.trim().toUpperCase());
     }
 
-    query += ` ORDER BY ${sortColumn} ${direction}`;
+    query += ` GROUP BY u.id ORDER BY ${sortColumn} ${direction}`;
 
     const [users] = await pool.query(query, params);
 

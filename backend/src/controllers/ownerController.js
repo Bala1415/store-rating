@@ -40,6 +40,16 @@ async function getOwnerDashboard(req, res, next) {
       [store.id]
     );
 
+    const { sortBy = 'date', sortOrder = 'DESC' } = req.query;
+    const allowedSortFields = {
+      name: 'u.name',
+      email: 'u.email',
+      rating: 'r.rating',
+      date: 'r.updated_at',
+    };
+    const sortColumn = allowedSortFields[sortBy] || 'r.updated_at';
+    const direction = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
     // Retrieve list of users and ratings for this store
     const [ratings] = await pool.query(
       `SELECT r.id, r.rating, r.created_at, r.updated_at,
@@ -47,7 +57,7 @@ async function getOwnerDashboard(req, res, next) {
        FROM ratings r
        JOIN users u ON r.user_id = u.id
        WHERE r.store_id = ?
-       ORDER BY r.updated_at DESC`,
+       ORDER BY ${sortColumn} ${direction}`,
       [store.id]
     );
 
@@ -86,13 +96,23 @@ async function getOwnerRatings(req, res, next) {
 
     const store = stores[0];
 
+    const { sortBy = 'date', sortOrder = 'DESC' } = req.query;
+    const allowedSortFields = {
+      name: 'u.name',
+      email: 'u.email',
+      rating: 'r.rating',
+      date: 'r.updated_at',
+    };
+    const sortColumn = allowedSortFields[sortBy] || 'r.updated_at';
+    const direction = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
     const [ratings] = await pool.query(
       `SELECT r.id, r.rating, r.created_at, r.updated_at,
               u.id AS user_id, u.name AS user_name, u.email AS user_email
        FROM ratings r
        JOIN users u ON r.user_id = u.id
        WHERE r.store_id = ?
-       ORDER BY r.updated_at DESC`,
+       ORDER BY ${sortColumn} ${direction}`,
       [store.id]
     );
 

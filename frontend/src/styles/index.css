@@ -461,6 +461,34 @@ h1, h2, h3, h4 {
   white-space: nowrap;
 }
 
+.data-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.data-table th.sortable:hover {
+  background-color: var(--gray-200);
+  color: var(--gray-900);
+}
+
+.th-sort-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.sort-indicator {
+  display: inline-block;
+  font-size: 0.75rem;
+  color: var(--gray-400);
+}
+
+.sort-indicator.active {
+  color: var(--primary);
+  font-weight: 700;
+}
+
 .data-table td {
   padding: 14px 16px;
   border-bottom: 1px solid var(--gray-200);

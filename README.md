@@ -1,210 +1,22 @@
 # Store Rating Web Application
 
-A full-stack web application designed and built for the **Roxiler Systems Full Stack Intern Coding Challenge**. The system provides a centralized platform for discovering retail stores, submitting and modifying customer ratings (1–5 stars), and managing users and stores through role-based access control.
+A full-stack web application designed and built for the **Roxiler Systems Full Stack Intern Coding Challenge**. The system provides a centralized platform for discovering retail stores, submitting and modifying customer ratings (1–5 stars), and managing users and stores through strict role-based access control (RBAC).
 
 ---
 
-## Table of Contents
+## ⚡ Quick Start: How to Run in 3 Minutes
 
-- [1. Project Overview](#1-project-overview)
-- [2. Features by Role](#2-features-by-role)
-- [3. Technology Stack](#3-technology-stack)
-- [4. Application Architecture](#4-application-architecture)
-- [5. Database Schema & Relationships](#5-database-schema--relationships)
-- [6. Prerequisites](#6-prerequisites)
-- [7. Installation & Setup (Windows)](#7-installation--setup-windows)
-- [8. MySQL Database Creation & Seeding](#8-mysql-database-creation--seeding)
-- [9. Environment Configuration](#9-environment-configuration)
-- [10. Running the Application](#10-running-the-application)
-- [11. Running Automated Tests](#11-running-automated-tests)
-- [12. API Endpoint Summary](#12-api-endpoint-summary)
-- [13. Security Implementation](#13-security-implementation)
-- [14. Key Architectural & Design Decisions](#14-key-architectural--design-decisions)
-- [15. Demonstration Video Guide](#15-demonstration-video-guide)
-- [16. Known Limitations](#16-known-limitations)
+### Prerequisites
+- **Node.js**: v18.0.0 or higher
+- **MySQL**: MySQL Server 8.0+ running locally (e.g. standard port `3306`)
+- **Git** & **npm**
 
 ---
 
-## 1. Project Overview
+### Step 1: Install Dependencies
+Open a terminal in the project root:
 
-The Store Rating Portal is a multi-tier web application featuring a unified authentication system with three distinct roles:
-1. **System Administrator**: Manages the platform, views live system metrics, creates accounts with assigned roles, and registers new stores linked to store owners.
-2. **Normal User**: Registers publicly, browses and searches stores by name or address, views database-computed aggregate ratings, and submits or updates store ratings.
-3. **Store Owner**: Views dedicated business dashboards displaying store performance, average star rating, and detailed customer submission logs.
-
----
-
-## 2. Features by Role
-
-### A. System Administrator (`ADMIN`)
-- **Dashboard Statistics**: Database-backed counts for registered users, stores, and submitted ratings.
-- **User Management**:
-  - Filter users by Name, Email, Address, and Role.
-  - Sort users by Name, Email, Role, and Registration Date (Ascending/Descending).
-  - Create user accounts with any role (`ADMIN`, `USER`, or `STORE_OWNER`).
-  - Inspect complete user profiles, including associated store rating metrics for Store Owners.
-- **Store Management**:
-  - Filter stores by Name, Email, and Address.
-  - Sort stores by Name, Email, Address, Average Rating, and Review Count.
-  - Add new stores and associate them with a verified Store Owner.
-- **Account Actions**: Update account password and securely log out.
-
-### B. Normal User (`USER`)
-- **Registration & Unified Login**: Public registration with Name (20–60 chars), Email, Address, and Password (8–16 chars, uppercase, special character). Public signup strictly provisions the `USER` role.
-- **Store Discovery**: Browse stores with computed overall ratings, total review counts, and the user's previously submitted rating (if any).
-- **Search & Sort**: Filter stores by Name or Address; sort by Name, Rating, or Total Reviews.
-- **Rating Submission & Upsert**:
-  - Rate any store from 1 to 5 stars.
-  - Enforces at most one rating per user per store (`(user_id, store_id)` unique constraint).
-  - Submitting another rating updates the existing record without creating duplicates.
-  - Overall store rating is dynamically recalculated by the MySQL backend (`AVG(rating)`).
-- **Account Actions**: Update account password and securely log out.
-
-### C. Store Owner (`STORE_OWNER`)
-- **Dedicated Dashboard**:
-  - Displays the business profile, overall average rating, and total rating count.
-  - Lists all customers who rated the store with customer name, email, star score, and submission timestamp.
-- **Ownership Verification**: Backend ensures store owners can only access ratings for their owned store.
-- **Clean Empty State**: If no store is assigned to the owner, a friendly informational empty state is rendered rather than an application failure.
-- **Account Actions**: Update account password and securely log out.
-
----
-
-## 3. Technology Stack
-
-- **Frontend**: [React.js](https://react.dev/) (v18), [React Router](https://reactrouter.com/) (v6), [Axios](https://axios-http.com/)
-- **Backend**: [Node.js](https://nodejs.org/) with [Express.js](https://expressjs.com/) (v4)
-- **Database**: [MySQL](https://www.mysql.com/) (v8.0+)
-- **Authentication**: JSON Web Tokens (`jsonwebtoken`) stored in **HttpOnly, SameSite cookies**
-- **Password Security**: [bcryptjs](https://github.com/dcodeIO/bcrypt.js) (10 salt rounds)
-- **Styling**: Clean, responsive modern CSS (`Inter` typography, CSS variables, mobile-first flex/grid)
-- **Rate Limiting**: `express-rate-limit` for authentication endpoints
-- **Testing**: [Jest](https://jestjs.io/) and [Supertest](https://github.com/ladjs/supertest)
-
----
-
-## 4. Application Architecture
-
-```
-store-rating/
-├── package.json               # Root scripts (run both backend & frontend)
-├── .gitignore                 # Excludes secrets, node_modules, and build outputs
-├── database/
-│   ├── schema.sql             # Reproducible DDL schema (tables, foreign keys, CHECK constraints)
-│   └── seed.sql               # Optional sample SQL dataset
-├── docs/
-│   └── demo-recording-guide.md# Complete 10-step video demonstration walkthrough
-├── backend/
-│   ├── .env.example           # Example backend environment variables
-│   ├── package.json           # Backend dependencies and scripts
-│   ├── src/
-│   │   ├── server.js          # HTTP server listener and DB connectivity check
-│   │   ├── app.js             # Express app setup, CORS, cookies, route mounting
-│   │   ├── config/            # Centralized environment and MySQL connection pool
-│   │   ├── controllers/       # Business logic (auth, admin, store, owner)
-│   │   ├── routes/            # Route declarations with middleware protection
-│   │   ├── middleware/        # Authentication, RBAC, error handling
-│   │   ├── validators/        # Input validation rules (Name 20-60, Passwords, etc.)
-│   │   ├── utils/             # Token signing, verification, cookie helpers
-│   │   └── scripts/           # initDb.js and seedDb.js Node scripts
-│   └── tests/                 # Automated unit and integration tests
-└── frontend/
-    ├── package.json           # Frontend dependencies and Vite configuration
-    ├── vite.config.js         # Vite configuration with API proxying
-    ├── index.html             # HTML entrypoint
-    └── src/
-        ├── App.jsx            # Top-level routing and role protection
-        ├── main.jsx           # React DOM root render
-        ├── context/           # AuthContext for user session management
-        ├── services/          # Axios API service module
-        ├── components/        # Reusable UI (Navbar, StarRating, Modal, Alert, etc.)
-        ├── pages/             # Role-specific screens (Admin, User, Owner, Auth)
-        └── styles/            # Responsive CSS stylesheet
-```
-
----
-
-## 5. Database Schema & Relationships
-
-The database `store_rating_db` uses normalized relational modeling across three core tables:
-
-```mermaid
-erDiagram
-    users ||--o{ stores : "owns (1:N)"
-    users ||--o{ ratings : "submits (1:N)"
-    stores ||--o{ ratings : "receives (1:N)"
-
-    users {
-        int id PK
-        varchar(60) name
-        varchar(255) email UK
-        varchar(255) password_hash
-        varchar(400) address
-        enum role "ADMIN, USER, STORE_OWNER"
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    stores {
-        int id PK
-        varchar(60) name
-        varchar(255) email
-        varchar(400) address
-        int owner_user_id FK
-        timestamp created_at
-        timestamp updated_at
-    }
-
-    ratings {
-        int id PK
-        int user_id FK
-        int store_id FK
-        tinyint rating "1 to 5"
-        timestamp created_at
-        timestamp updated_at
-    }
-```
-
-### Table Details & Constraints
-1. **`users` Table**:
-   - `id`: `INT AUTO_INCREMENT PRIMARY KEY`
-   - `name`: `VARCHAR(60) NOT NULL`, with `CHECK (CHAR_LENGTH(name) >= 20 AND CHAR_LENGTH(name) <= 60)`
-   - `email`: `VARCHAR(255) NOT NULL UNIQUE`
-   - `password_hash`: `VARCHAR(255) NOT NULL` (stored as bcrypt hash, never plaintext)
-   - `address`: `VARCHAR(400) NULL`
-   - `role`: `ENUM('ADMIN', 'USER', 'STORE_OWNER') NOT NULL DEFAULT 'USER'`
-2. **`stores` Table**:
-   - `id`: `INT AUTO_INCREMENT PRIMARY KEY`
-   - `name`: `VARCHAR(60) NOT NULL`, with `CHECK (CHAR_LENGTH(name) >= 20 AND CHAR_LENGTH(name) <= 60)`
-   - `email`: `VARCHAR(255) NOT NULL`
-   - `address`: `VARCHAR(400) NULL`
-   - `owner_user_id`: `INT NOT NULL`, foreign key referencing `users(id)` `ON DELETE RESTRICT ON UPDATE CASCADE`
-3. **`ratings` Table**:
-   - `id`: `INT AUTO_INCREMENT PRIMARY KEY`
-   - `user_id`: `INT NOT NULL`, foreign key referencing `users(id)` `ON DELETE CASCADE`
-   - `store_id`: `INT NOT NULL`, foreign key referencing `stores(id)` `ON DELETE CASCADE`
-   - `rating`: `TINYINT NOT NULL`, with `CHECK (rating >= 1 AND rating <= 5)`
-   - **Unique Constraint**: `UNIQUE KEY uk_user_store_rating (user_id, store_id)` guarantees each user can have at most one rating per store.
-
----
-
-## 6. Prerequisites
-
-- **Operating System**: Windows 10/11
-- **Node.js**: v18.0.0 or higher (v26.4.0 verified)
-- **npm**: v9.0.0 or higher
-- **MySQL**: MySQL Server 8.0 or higher (service `MySQL80` running)
-
----
-
-## 7. Installation & Setup (Windows)
-
-Clone the repository or navigate to the project directory:
-
-```powershell
-# Navigate to project folder
-cd "c:\Users\Balavignesh\Desktop\store rating"
-
+```bash
 # Install backend dependencies
 cd backend
 npm install
@@ -218,198 +30,274 @@ cd ..
 
 ---
 
-## 8. MySQL Database Creation & Seeding
+### Step 2: Configure Environment & Initialize Database
 
-### Step A: Configure Local Credentials
-Copy the example environment file in `backend`:
-```powershell
-cp backend/.env.example backend/.env
-```
-Open `backend/.env` in Visual Studio Code and enter your MySQL root password:
-```env
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your_mysql_root_password_here
-DB_NAME=store_rating_db
-```
+1. Create backend `.env` configuration:
+   ```bash
+   cp backend/.env.example backend/.env
+   ```
+2. Open `backend/.env` and update your MySQL credentials:
+   ```env
+   PORT=5000
+   NODE_ENV=development
+   FRONTEND_URL=http://localhost:5173
 
-### Step B: Run Automated Database Initialization
-Execute the database initialization script:
-```powershell
-npm run db:init
-```
-*What this does*: Connects to MySQL, executes `database/schema.sql`, creates the `store_rating_db` database, tables, foreign keys, and indexes.
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_USER=root
+   DB_PASSWORD=your_mysql_password_here
+   DB_NAME=store_rating_db
 
-### Step C: Populate Seed Test Data
-Populate realistic development accounts and stores:
-```powershell
-npm run db:seed
-```
+   JWT_SECRET=super_secret_jwt_key_roxiler_challenge_2026
+   JWT_EXPIRES_IN=24h
+   COOKIE_MAX_AGE_DAYS=1
+   ```
+3. Initialize the database schema and populate sample seed data:
+   ```bash
+   # Creates database, tables, check constraints, foreign keys, and indexes
+   npm run db:init
 
-#### Pre-configured Test Accounts:
-| Role | Email | Password | Description |
-|---|---|---|---|
-| **Administrator** | `admin@roxiler.com` | `Admin@1234` | Full system access & dashboards |
-| **Store Owner** | `alice.owner@roxiler.com` | `Owner@1234` | Assigned to 2 stores |
-| **Store Owner** | `robert.owner@roxiler.com` | `Owner@1234` | Assigned to 1 store |
-| **Store Owner** | `charles.owner@roxiler.com` | `Owner@1234` | Unassigned (tests empty state) |
-| **Normal User** | `chris.user@gmail.com` | `User@1234` | Verified customer account |
-| **Normal User** | `samantha.user@gmail.com` | `User@1234` | Verified customer account |
-
-> **Security Warning**: These accounts are strictly for local testing and demonstration. Never use sample credentials in production.
+   # Seeds realistic users, stores, and ratings with hashed passwords
+   npm run db:seed
+   ```
 
 ---
 
-## 9. Environment Configuration
+### Step 3: Launch the Application
 
-### Backend (`backend/.env`)
-```env
-PORT=5000
-NODE_ENV=development
-FRONTEND_URL=http://localhost:5173
+Open **two terminal windows**:
 
-# MySQL Configuration
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=your_actual_password
-DB_NAME=store_rating_db
-
-# Security
-JWT_SECRET=super_secret_jwt_key_roxiler_intern_challenge_2026_secure
-JWT_EXPIRES_IN=24h
-COOKIE_MAX_AGE_DAYS=1
-```
-
-### Frontend (`frontend/.env.example`)
-```env
-VITE_API_URL=/api
-```
-*(By default, Vite's proxy automatically routes `/api` calls to `http://localhost:5000`.)*
-
----
-
-## 10. Running the Application
-
-Open two terminal windows:
-
-### Terminal 1: Start Backend Server
-```powershell
+#### Terminal 1 — Start Backend Server
+```bash
 npm run start:backend
-# Or: npm --prefix backend start
-```
-The server will start at `http://localhost:5000`. You should see:
-```
-Store Rating API Server running on port 5000
-[DB SUCCESS] Connected to MySQL database 'store_rating_db' successfully.
+# Server starts at http://localhost:5000
+# Health check: http://localhost:5000/api/health
 ```
 
-### Terminal 2: Start Frontend Application
-```powershell
+#### Terminal 2 — Start Frontend Application
+```bash
 npm run start:frontend
-# Or: npm --prefix frontend dev
+# Client starts at http://localhost:5173
 ```
-The Vite development server will start at `http://localhost:5173`. Open this URL in your browser.
+
+Now open **`http://localhost:5173`** in your browser.
 
 ---
 
-## 11. Running Automated Tests
+### 🔑 Pre-Configured Demo Accounts (Ready to Test)
 
-To run the automated test suite:
-```powershell
+The seed script creates ready-to-use accounts for all roles (also available via one-click **Demo Quick-Login** buttons on the login screen):
+
+| Role | Email | Password | Access & Capabilities |
+| :--- | :--- | :--- | :--- |
+| **System Administrator** | `admin@roxiler.com` | `Admin@1234` | System dashboard, user/store management, rating audits |
+| **Store Owner** | `alice.owner@roxiler.com` | `Owner@1234` | Store dashboard, customer review logs, live average rating |
+| **Store Owner** | `robert.owner@roxiler.com` | `Owner@1234` | Associated store profile and submissions |
+| **Store Owner** | `charles.owner@roxiler.com` | `Owner@1234` | Unassigned store owner (demonstrates clean empty state) |
+| **Normal User** | `chris.user@gmail.com` | `User@1234` | Rate stores, modify ratings, browse/search listings |
+| **Normal User** | `samantha.user@gmail.com` | `User@1234` | Customer account with existing reviews |
+
+---
+
+## 🌟 Key Features Highlight
+
+### 1. 👑 System Administrator Features
+- **Real-Time Database Dashboard**: Live metric cards displaying:
+  - Total registered users count
+  - Total registered stores count
+  - Total submitted ratings count
+- **User Management**:
+  - View all user accounts (Name, Email, Address, Role, Creation Date).
+  - Create new accounts with **ADMIN**, **USER**, or **STORE_OWNER** roles.
+  - Multi-field filters: filter in real-time by **Name**, **Email**, **Address**, and **Role**.
+  - **Store Owner Rating Inspection**: If a user is a Store Owner, their store's overall rating is displayed directly in the user list, and clicking **View Details** inspects their associated store details, average star rating, and total review count.
+- **Store Management**:
+  - View registered stores with Name, Email, Address, Assigned Store Owner, Overall Rating, and Review Count.
+  - Create new stores and assign them to verified Store Owners.
+  - Multi-field filters by Name, Email, and Address.
+- **Interactive Sorting**: Click directly on table headers to sort ascending/descending with clear visual sort indicators.
+
+---
+
+### 2. 👤 Normal User Features
+- **Public Registration & Unified Login**:
+  - Sign up with Name, Email, Address, and Password (strictly provisioned with `USER` role).
+  - Unified login automatically routes to the store discovery page.
+- **Store Discovery & Search**:
+  - Simultaneous search by **Store Name** and **Address**.
+  - Dual view toggle: **Card Grid View** or **Sortable Data Table View**.
+- **Interactive Rating System**:
+  - Submit ratings between **1 and 5 stars** using an interactive star component.
+  - Displays overall store rating (`AVG` computed directly in MySQL) and total review count.
+  - Highlights user's previously submitted rating.
+  - **Upsert Rating Logic**: Users can submit a new rating or modify an existing rating seamlessly without duplicate database rows.
+- **Account Management**: Update password securely after logging in; single-click logout.
+
+---
+
+### 3. 🏬 Store Owner Features
+- **Dedicated Store Owner Dashboard**:
+  - Displays associated store profile (Name, Address, Email).
+  - Real-time overall average rating score with visual star representation.
+  - Total customer reviews counter.
+  - Complete customer submission log table (Customer Name, Email, Star Rating, and Submission/Update Date).
+- **Interactive Table Sorting**: Click table column headers to sort customer feedback by **Customer Name**, **Customer Email**, **Rating**, or **Date**.
+- **Clean Empty State**: Graceful fallback UI for store owners who have not yet been assigned a store by an administrator.
+- **Account Management**: Update password and log out securely.
+
+---
+
+### 4. 📋 Strict Form Validations & Database Integrity
+The application rigorously enforces all challenge validation requirements at **both frontend and backend levels**, backed by **MySQL CHECK constraints**:
+
+| Field | Validation Rule | Enforcement Mechanisms |
+| :--- | :--- | :--- |
+| **Full Name** | Min 20 characters, Max 60 characters | Frontend character counter meter, Express validator, DB `chk_users_name_length` & `chk_stores_name_length` |
+| **Address** | Optional, Max 400 characters | Frontend character length counter, Express validator, DB `chk_users_address_length` & `chk_stores_address_length` |
+| **Password** | 8–16 characters, ≥1 uppercase letter, ≥1 special character | Strict Regex validation on signup, admin creation, and password modification |
+| **Email** | Standard RFC-compliant email | Strict email regex, normalized to lowercase, DB `uk_users_email` unique constraint |
+| **Rating** | Integer between 1 and 5 | Express validator, DB constraint `chk_ratings_range`, and interactive 5-star selector |
+
+---
+
+### 5. 📊 Interactive Table Sorting Everywhere
+Per the challenge requirements, **all data tables support ascending and descending sorting**:
+- **Admin Users Table**: Sort by Name, Email, Address, Role, or Created Date.
+- **Admin Stores Table**: Sort by Store Name, Store Email, Address, Overall Rating, or Reviews Count.
+- **Store Owner Submissions Table**: Sort by Customer Name, Customer Email, Rating, or Submission Date.
+- **Normal User Stores Table**: Sort by Store Name, Address, Overall Rating, or Reviews Count.
+
+---
+
+### 6. 🛡️ Security Best Practices
+- **HttpOnly Secure Cookies**: JWT tokens are stored in `HttpOnly` cookies (`SameSite=lax`), completely immune to JavaScript XSS token theft.
+- **Bcrypt Hashing**: Passwords salted and hashed with `bcryptjs` (10 rounds). Plaintext passwords are never logged or stored.
+- **Role-Based Authorization (RBAC)**: Server-side middleware (`requireRoles`) protects private endpoints against unauthorized access.
+- **SQL Injection Defense**: 100% parameterized SQL queries (`?` placeholders via `mysql2/promise`).
+- **Brute-Force Rate Limiting**: `express-rate-limit` guards login and registration routes.
+- **Ownership Scoping**: Store owners can strictly query data linked to their authenticated `user_id`.
+
+---
+
+## 🛠️ Technology Stack
+
+- **Frontend**: React.js 18, React Router v6, Axios, Lucide Icons, Vite
+- **Backend**: Node.js, Express.js 4, Express Rate Limit, Cookie Parser, CORS
+- **Database**: MySQL 8.0+ (`mysql2/promise` with connection pooling)
+- **Authentication**: JSON Web Tokens (`jsonwebtoken`) & `bcryptjs`
+- **Testing**: Jest & Supertest
+- **Design System**: Responsive Vanilla CSS with customized HSL color palette, dark text contrast, and micro-interactions
+
+---
+
+## 🗄️ Database Architecture & Schema
+
+The application uses a normalized MySQL 8.0 relational schema:
+
+```mermaid
+erDiagram
+    users ||--o{ stores : "owns (1:N)"
+    users ||--o{ ratings : "submits (1:N)"
+    stores ||--o{ ratings : "receives (1:N)"
+
+    users {
+        int id PK
+        varchar(60) name "Min 20, Max 60 chars"
+        varchar(255) email UK "Unique"
+        varchar(255) password_hash
+        varchar(400) address "Max 400 chars"
+        enum role "ADMIN, USER, STORE_OWNER"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    stores {
+        int id PK
+        varchar(60) name "Min 20, Max 60 chars"
+        varchar(255) email
+        varchar(400) address "Max 400 chars"
+        int owner_user_id FK "References users(id)"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    ratings {
+        int id PK
+        int user_id FK "References users(id)"
+        int store_id FK "References stores(id)"
+        tinyint rating "1 to 5"
+        timestamp created_at
+        timestamp updated_at
+    }
+```
+
+- **Unique Constraint**: `uk_user_store_rating (user_id, store_id)` ensures a user can submit only one rating per store.
+- **Foreign Keys**: `ON DELETE CASCADE` for ratings when users or stores are removed; `ON DELETE RESTRICT` for store owners to prevent orphaned stores.
+
+---
+
+## 🧪 Running Automated Tests
+
+Run the backend test suite:
+
+```bash
 npm test
 # Or: npm --prefix backend test
 ```
-The test suite validates:
-- Name constraints (20–60 characters enforced).
-- Password complexity (8–16 characters, uppercase, special character).
-- Email normalization and format validation.
-- Address constraint (max 400 characters).
-- Rating boundaries (1–5 integer constraint).
-- Allowed role validations.
-- Role-based authorization middleware (`requireRoles`).
-- JWT signing and verification.
+
+The test suite covers:
+- Input validation (Name 20–60 chars, password complexity, email format, address limits, rating range 1–5).
+- Authentication middleware and JWT cookie verification.
+- Role-based authorization matrix (`requireRoles`).
+- Integration tests for signup, login, store listing, rating submissions, and dashboard metrics.
 
 ---
 
-## 12. API Endpoint Summary
+## 📡 API Endpoints Summary
 
-### Authentication Routes
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `POST` | `/api/auth/signup` | Public | Registers a new Normal User (role `USER`) |
+### Authentication (`/api/auth`)
+| Method | Endpoint | Access | Purpose |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/signup` | Public | Register Normal User (enforces role `USER`) |
 | `POST` | `/api/auth/login` | Public | Unified login; sets HttpOnly cookie |
-| `POST` | `/api/auth/logout` | Authenticated | Clears authentication cookie |
+| `POST` | `/api/auth/logout` | Authenticated | Clears HttpOnly cookie |
 | `GET` | `/api/auth/me` | Authenticated | Returns current authenticated profile |
-| `PATCH`| `/api/auth/password` | Authenticated | Updates current user's password |
+| `PATCH` | `/api/auth/password` | Authenticated | Updates account password |
 
-### Administrator Routes
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `GET` | `/api/admin/dashboard` | `ADMIN` | Returns totals for users, stores, and ratings |
-| `GET` | `/api/admin/users` | `ADMIN` | Lists users with filtering, sorting, and roles |
-| `POST` | `/api/admin/users` | `ADMIN` | Creates user (`ADMIN`, `USER`, or `STORE_OWNER`) |
-| `GET` | `/api/admin/users/:id`| `ADMIN` | Inspects user; includes store ratings for owners |
-| `GET` | `/api/admin/stores` | `ADMIN` | Lists stores with owner names and average ratings |
-| `POST` | `/api/admin/stores` | `ADMIN` | Creates store and associates with a Store Owner |
+### Administrator (`/api/admin`)
+| Method | Endpoint | Access | Purpose |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/admin/dashboard` | `ADMIN` | Total counts: users, stores, submitted ratings |
+| `GET` | `/api/admin/users` | `ADMIN` | Filter & sort users; includes store ratings for owners |
+| `POST` | `/api/admin/users` | `ADMIN` | Create user with `ADMIN`, `USER`, or `STORE_OWNER` role |
+| `GET` | `/api/admin/users/:id` | `ADMIN` | Inspect user profile and associated store rating details |
+| `GET` | `/api/admin/stores` | `ADMIN` | Filter & sort stores with average ratings |
+| `POST` | `/api/admin/stores` | `ADMIN` | Create store and link with a Store Owner |
 
-### Stores & Ratings Routes
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `GET` | `/api/stores` | Public / Auth | Search stores; returns average rating & user rating |
-| `GET` | `/api/stores/:id` | Public / Auth | Returns store details and rating summary |
-| `POST` | `/api/stores/:id/ratings` | `USER` | Submits or updates rating (1–5) |
-| `PATCH`| `/api/stores/:id/ratings` | `USER` | Modifies existing rating |
+### Stores & Ratings (`/api/stores`)
+| Method | Endpoint | Access | Purpose |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/stores` | Public / Auth | Search stores by name/address; returns average and user rating |
+| `GET` | `/api/stores/:id` | Public / Auth | Get store details and rating breakdown |
+| `POST` | `/api/stores/:id/ratings` | `USER` | Submit rating (1–5) |
+| `PATCH`| `/api/stores/:id/ratings` | `USER` | Modify previously submitted rating |
 
-### Store Owner Routes
-| Method | Endpoint | Access | Description |
-|---|---|---|---|
-| `GET` | `/api/owner/dashboard` | `STORE_OWNER` | Returns owner's store, average rating, reviews |
-| `GET` | `/api/owner/ratings` | `STORE_OWNER` | Returns rating submissions for owner's store |
-
----
-
-## 13. Security Implementation
-
-1. **HttpOnly Cookie Authentication**:
-   - The JWT is transmitted in an `HttpOnly` cookie with `sameSite: 'lax'`, preventing JavaScript access and protecting against Cross-Site Scripting (XSS) token theft.
-2. **Password Protection**:
-   - Passwords are salted and hashed with `bcryptjs` (salt rounds: 10). Plaintext passwords and hashes are never exposed in API responses or logs.
-3. **Role-Based Access Control (RBAC)**:
-   - Server-side middleware (`requireRoles`) strictly guards endpoints. Attempting to bypass the UI triggers a `403 Forbidden` error.
-4. **Store Ownership Isolation**:
-   - Store owners cannot inspect or manipulate other stores' data. The backend explicitly matches `stores.owner_user_id` against `req.user.id`.
-5. **SQL Injection Defense**:
-   - Every database query uses parameterized SQL statements (`?` placeholders via `mysql2/promise`). Untrusted user input is never concatenated into SQL strings.
-6. **Rate Limiting**:
-   - `express-rate-limit` protects authentication endpoints (`/api/auth/login` and `/api/auth/signup`) against brute-force credential stuffing.
-7. **Input Sanitization & Normalization**:
-   - Emails are trimmed and converted to lowercase; names and addresses are trimmed and validated against exact length boundaries.
+### Store Owner (`/api/owner`)
+| Method | Endpoint | Access | Purpose |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/owner/dashboard` | `STORE_OWNER` | Business metrics, average rating, customer reviews list |
+| `GET` | `/api/owner/ratings` | `STORE_OWNER` | List of customer ratings with sorting |
 
 ---
 
-## 14. Key Architectural & Design Decisions
+## 📹 Video Walkthrough Guide
 
-1. **Unified Login with Role-Based Redirection**:
-   - All users sign in through a single form. The frontend inspects the returned role and navigates to the appropriate dashboard (`/admin/dashboard`, `/owner/dashboard`, or `/stores`).
-2. **Database Aggregate Ratings**:
-   - Overall store ratings are computed dynamically using `AVG(rating)` directly in MySQL rather than maintained as separate mutable columns or computed on the frontend, ensuring mathematical consistency.
-3. **Upsert Logic for Store Ratings**:
-   - A unique constraint on `(user_id, store_id)` ensures data integrity. Rating submissions update existing records seamlessly, preventing duplicate entries.
-4. **Vite Reverse Proxy**:
-   - In development, Vite proxies `/api` requests to port 5000, eliminating CORS complexity and ensuring cookies work identically across environments.
-
----
-
-## 15. Demonstration Video Guide
-
-A comprehensive walkthrough for the video presentation is available at:
+A step-by-step 10-phase demonstration guide for evaluating or recording a demo video is available at:  
 👉 **[docs/demo-recording-guide.md](docs/demo-recording-guide.md)**
 
 ---
 
-## 16. Known Limitations
+## 👨‍💻 Author
 
-- **Email Delivery**: The application validates email formats and uniqueness; transactional email verification (SMTP) is not implemented as per assignment scope.
-- **Image Uploads**: Store logos and avatars are represented with clean placeholder avatars rather than cloud object storage (S3/Azure Blob).
+**Balavignesh**  
+Developed for the **Roxiler Systems Full Stack Coding Challenge**.

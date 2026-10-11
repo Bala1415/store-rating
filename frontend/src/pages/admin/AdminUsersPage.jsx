@@ -65,6 +65,19 @@ export default function AdminUsersPage() {
     setFilters((prev) => ({ ...prev, [field]: value }));
   }
 
+  function handleSort(columnKey) {
+    setFilters((prev) => ({
+      ...prev,
+      sortBy: columnKey,
+      sortOrder: prev.sortBy === columnKey && prev.sortOrder === 'ASC' ? 'DESC' : 'ASC',
+    }));
+  }
+
+  function renderSortIndicator(columnKey) {
+    if (filters.sortBy !== columnKey) return <span className="sort-indicator">↕</span>;
+    return <span className="sort-indicator active">{filters.sortOrder === 'ASC' ? '▲' : '▼'}</span>;
+  }
+
   function clearFilters() {
     setFilters({
       name: '',
@@ -212,6 +225,7 @@ export default function AdminUsersPage() {
           <option value="created_at">Sort: Created Date</option>
           <option value="name">Sort: Name</option>
           <option value="email">Sort: Email</option>
+          <option value="address">Sort: Address</option>
           <option value="role">Sort: Role</option>
         </select>
         <select
@@ -242,11 +256,31 @@ export default function AdminUsersPage() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Address</th>
-                <th>Role</th>
-                <th>Created</th>
+                <th className="sortable" onClick={() => handleSort('name')}>
+                  <span className="th-sort-wrapper">
+                    Name {renderSortIndicator('name')}
+                  </span>
+                </th>
+                <th className="sortable" onClick={() => handleSort('email')}>
+                  <span className="th-sort-wrapper">
+                    Email {renderSortIndicator('email')}
+                  </span>
+                </th>
+                <th className="sortable" onClick={() => handleSort('address')}>
+                  <span className="th-sort-wrapper">
+                    Address {renderSortIndicator('address')}
+                  </span>
+                </th>
+                <th className="sortable" onClick={() => handleSort('role')}>
+                  <span className="th-sort-wrapper">
+                    Role {renderSortIndicator('role')}
+                  </span>
+                </th>
+                <th className="sortable" onClick={() => handleSort('created_at')}>
+                  <span className="th-sort-wrapper">
+                    Created {renderSortIndicator('created_at')}
+                  </span>
+                </th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
@@ -259,7 +293,14 @@ export default function AdminUsersPage() {
                     {u.address || <span style={{ color: '#94a3b8' }}>None</span>}
                   </td>
                   <td>
-                    <span className={`badge ${getBadgeClass(u.role)}`}>{u.role.replace('_', ' ')}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                      <span className={`badge ${getBadgeClass(u.role)}`}>{u.role.replace('_', ' ')}</span>
+                      {u.role === 'STORE_OWNER' && (
+                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#d97706' }}>
+                          ⭐ {u.store_rating ? Number(u.store_rating).toFixed(1) : 'Unrated'}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td style={{ fontSize: '0.85rem', color: '#64748b' }}>
                     {new Date(u.created_at).toLocaleDateString()}

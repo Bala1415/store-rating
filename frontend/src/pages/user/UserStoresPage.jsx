@@ -16,6 +16,7 @@ export default function UserStoresPage() {
   const [searchAddress, setSearchAddress] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [sortOrder, setSortOrder] = useState('ASC');
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table'
 
   // Track pending rating selections per store: { [storeId]: ratingValue }
   const [pendingRatings, setPendingRatings] = useState({});
@@ -51,6 +52,20 @@ export default function UserStoresPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleSort(columnKey) {
+    if (sortBy === columnKey) {
+      setSortOrder((prev) => (prev === 'ASC' ? 'DESC' : 'ASC'));
+    } else {
+      setSortBy(columnKey);
+      setSortOrder('ASC');
+    }
+  }
+
+  function renderSortIndicator(columnKey) {
+    if (sortBy !== columnKey) return <span className="sort-indicator">↕</span>;
+    return <span className="sort-indicator active">{sortOrder === 'ASC' ? '▲' : '▼'}</span>;
   }
 
   function handleRatingSelect(storeId, ratingVal) {
@@ -103,6 +118,24 @@ export default function UserStoresPage() {
           <h1 className="page-title">Stores & Ratings</h1>
           <p className="page-subtitle">Discover local stores, inspect customer reviews, and share your ratings</p>
         </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            type="button"
+            className={`btn ${viewMode === 'grid' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+            onClick={() => setViewMode('grid')}
+            title="Card Grid View"
+          >
+            🔲 Cards
+          </button>
+          <button
+            type="button"
+            className={`btn ${viewMode === 'table' ? 'btn-primary' : 'btn-secondary'} btn-sm`}
+            onClick={() => setViewMode('table')}
+            title="Data Table View"
+          >
+            📋 Table
+          </button>
+        </div>
       </div>
 
       {error && <Alert type="error" message={error} onClose={() => setError('')} />}
@@ -131,6 +164,7 @@ export default function UserStoresPage() {
           onChange={(e) => setSortBy(e.target.value)}
         >
           <option value="name">Sort by Name</option>
+          <option value="address">Sort by Address</option>
           <option value="average_rating">Sort by Average Rating</option>
           <option value="rating_count">Sort by Total Reviews</option>
         </select>
@@ -165,6 +199,93 @@ export default function UserStoresPage() {
           <div className="empty-state-icon">🏬</div>
           <div className="empty-state-title">No Stores Found</div>
           <div className="empty-state-text">No stores match your search criteria. Try a different query.</div>
+        </div>
+      ) : viewMode === 'table' ? (
+        <div className="table-responsive">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th className="sortable" onClick={() => handleSort('name')}>
+                  <span className="th-sort-wrapper">
+                    Store Name {renderSortIndicator('name')}
+                  </span>
+                </th>
+                <th className="sortable" onClick={() => handleSort('address')}>
+                  <span className="th-sort-wrapper">
+                    Address {renderSortIndicator('address')}
+                  </span>
+                </th>
+                <th className="sortable" onClick={() => handleSort('average_rating')}>
+                  <span className="th-sort-wrapper">
+                    Overall Rating {renderSortIndicator('average_rating')}
+                  </span>
+                </th>
+                <th className="sortable" onClick={() => handleSort('rating_count')}>
+                  <span className="th-sort-wrapper">
+                    Reviews {renderSortIndicator('rating_count')}
+                  </span>
+                </th>
+                <th>Your Rating</th>
+                <th style={{ textAlign: 'right' }}>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {stores.map((store) => {
+                const hasUserRated = !!store.user_rating;
+                const currentSelected = pendingRatings[store.id] || store.user_rating || 0;
+                const isSubmitting = submittingStoreId === store.id;
+
+                return (
+                  <tr key={store.id}>
+                    <td style={{ fontWeight: 600 }}>{store.name}</td>
+                    <td style={{ maxWidth: '240px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {store.address || <span style={{ color: '#94a3b8' }}>None</span>}
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <StarRating value={store.average_rating} size={18} />
+                        <span style={{ fontWeight: 600 }}>
+                          {Number(store.average_rating) > 0 ? Number(store.average_rating).toFixed(1) : 'Unrated'}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      {store.rating_count} {store.rating_count === 1 ? 'review' : 'reviews'}
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <StarRating
+                          interactive={true}
+                          value={currentSelected}
+                          onChange={(star) => handleRatingSelect(store.id, star)}
+                          size={20}
+                        />
+                        {hasUserRated && (
+                          <span className="badge badge-user" style={{ fontSize: '0.7rem' }}>
+                            {store.user_rating}★
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <button
+                        type="button"
+                        className={`btn ${hasUserRated ? 'btn-secondary' : 'btn-primary'} btn-sm`}
+                        disabled={isSubmitting || !currentSelected || currentSelected === store.user_rating}
+                        onClick={() => handleSubmitRating(store.id)}
+                      >
+                        {isSubmitting
+                          ? 'Saving...'
+                          : hasUserRated
+                          ? 'Modify'
+                          : 'Submit'}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       ) : (
         <div className="store-grid">

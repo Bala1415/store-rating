@@ -114,6 +114,19 @@ export default function AdminStoresPage() {
     setFilters((prev) => ({ ...prev, [field]: value }));
   }
 
+  function handleSort(columnKey) {
+    setFilters((prev) => ({
+      ...prev,
+      sortBy: columnKey,
+      sortOrder: prev.sortBy === columnKey && prev.sortOrder === 'ASC' ? 'DESC' : 'ASC',
+    }));
+  }
+
+  function renderSortIndicator(columnKey) {
+    if (filters.sortBy !== columnKey) return <span className="sort-indicator">↕</span>;
+    return <span className="sort-indicator active">{filters.sortOrder === 'ASC' ? '▲' : '▼'}</span>;
+  }
+
   function clearFilters() {
     setFilters({
       name: '',
@@ -171,6 +184,7 @@ export default function AdminStoresPage() {
           <option value="created_at">Sort: Created Date</option>
           <option value="name">Sort: Store Name</option>
           <option value="email">Sort: Store Email</option>
+          <option value="address">Sort: Store Address</option>
           <option value="average_rating">Sort: Average Rating</option>
           <option value="rating_count">Sort: Total Ratings</option>
         </select>
@@ -202,12 +216,32 @@ export default function AdminStoresPage() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Store Name</th>
-                <th>Store Email</th>
-                <th>Address</th>
+                <th className="sortable" onClick={() => handleSort('name')}>
+                  <span className="th-sort-wrapper">
+                    Store Name {renderSortIndicator('name')}
+                  </span>
+                </th>
+                <th className="sortable" onClick={() => handleSort('email')}>
+                  <span className="th-sort-wrapper">
+                    Store Email {renderSortIndicator('email')}
+                  </span>
+                </th>
+                <th className="sortable" onClick={() => handleSort('address')}>
+                  <span className="th-sort-wrapper">
+                    Address {renderSortIndicator('address')}
+                  </span>
+                </th>
                 <th>Assigned Store Owner</th>
-                <th>Overall Rating</th>
-                <th>Reviews</th>
+                <th className="sortable" onClick={() => handleSort('average_rating')}>
+                  <span className="th-sort-wrapper">
+                    Overall Rating {renderSortIndicator('average_rating')}
+                  </span>
+                </th>
+                <th className="sortable" onClick={() => handleSort('rating_count')}>
+                  <span className="th-sort-wrapper">
+                    Reviews {renderSortIndicator('rating_count')}
+                  </span>
+                </th>
               </tr>
             </thead>
             <tbody>

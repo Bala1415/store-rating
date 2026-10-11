@@ -7,21 +7,37 @@ export default function OwnerDashboardPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [sortBy, setSortBy] = useState('date');
+  const [sortOrder, setSortOrder] = useState('DESC');
 
   useEffect(() => {
     fetchOwnerDashboard();
-  }, []);
+  }, [sortBy, sortOrder]);
 
   async function fetchOwnerDashboard() {
     try {
       setLoading(true);
-      const res = await ownerApi.getDashboard();
+      const res = await ownerApi.getDashboard({ sortBy, sortOrder });
       setData(res.data);
     } catch (err) {
       setError(err.message || 'Failed to load store owner dashboard.');
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleSort(columnKey) {
+    if (sortBy === columnKey) {
+      setSortOrder((prev) => (prev === 'ASC' ? 'DESC' : 'ASC'));
+    } else {
+      setSortBy(columnKey);
+      setSortOrder('ASC');
+    }
+  }
+
+  function renderSortIndicator(columnKey) {
+    if (sortBy !== columnKey) return <span className="sort-indicator">↕</span>;
+    return <span className="sort-indicator active">{sortOrder === 'ASC' ? '▲' : '▼'}</span>;
   }
 
   if (loading) {
@@ -139,10 +155,26 @@ export default function OwnerDashboardPage() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Customer Name</th>
-                  <th>Customer Email</th>
-                  <th>Rating</th>
-                  <th>Submitted / Modified Date</th>
+                  <th className="sortable" onClick={() => handleSort('name')}>
+                    <span className="th-sort-wrapper">
+                      Customer Name {renderSortIndicator('name')}
+                    </span>
+                  </th>
+                  <th className="sortable" onClick={() => handleSort('email')}>
+                    <span className="th-sort-wrapper">
+                      Customer Email {renderSortIndicator('email')}
+                    </span>
+                  </th>
+                  <th className="sortable" onClick={() => handleSort('rating')}>
+                    <span className="th-sort-wrapper">
+                      Rating {renderSortIndicator('rating')}
+                    </span>
+                  </th>
+                  <th className="sortable" onClick={() => handleSort('date')}>
+                    <span className="th-sort-wrapper">
+                      Submitted / Modified Date {renderSortIndicator('date')}
+                    </span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
